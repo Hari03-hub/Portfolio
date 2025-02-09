@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Stress Detector</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            max-width: 500px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .voice-capture {
+            cursor: pointer;
+            display: inline-block;
+            margin: 20px 0;
+            padding: 15px 20px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .voice-capture:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .voice-capture:active {
+            background-color: #004494;
+            transform: scale(1);
+        }
+        .loading {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .result {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: fadeIn 0.8s forwards;
+        }
+        .result h2 {
+            font-size: 20px;
+            color: #333;
+        }
+        .result p {
+            font-size: 16px;
+            color: #555;
+            margin: 5px 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mental Health Stress Detector Using Words</h1>
+        <!-- Voice Capture Button -->
+        <button class="voice-capture" onclick="startVoiceCapture()">Click to Speak</button>
+
+        <!-- Loading Text (Visible During Transcription) -->
+        <div id="loading" class="loading" style="display: none;">
+            Analyzing your voice...
+        </div>
+
+        <!-- Display Transcribed Text and Result -->
+        <div id="result-container" class="result">
+            <h2>Analysis Result:</h2>
+            <p><strong>Input Text:</strong> <span id="transcribedText"></span></p>
+            <p id="stressResult"></p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript function to start voice capture
+        function startVoiceCapture() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Your browser doesn't support speech recognition. Please try Chrome.");
+                return;
+            }
+
+            // Show the loading indicator
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result-container").style.display = "none";
+
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.start();
+
+            recognition.onstart = function() {
+                console.log("Voice capture started...");
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById("transcribedText").innerText = transcript;
+                
+                // Call the analyzeStress function with the transcribed text
+                analyzeStress(transcript);
+
+                // Hide the loading indicator after transcription
+                document.getElementById("loading").style.display = "none";
+            };
+
+            recognition.onerror = function(event) {
+                alert("Error occurred in recognition: " + event.error);
+                document.getElementById("loading").style.display = "none";
+            };
+        }
+
+        // Simulated analyzeStress function (to be replaced with actual API call in production)
+        function analyzeStress(text) {
+            const stressWords = [
+    'anxious', 'nervous', 'worried', 'stressed', 'depressed', 
+    'overwhelmed', 'tense', 'panic', 'afraid', 'burned out', 
+    'exhausted', 'tired', 'hopeless', 'worthless', 'fearful'];
+            const detectedWords = stressWords.filter(word => text.toLowerCase().includes(word));
+            
+            const resultContainer = document.getElementById("result-container");
+            const stressResult = document.getElementById("stressResult");
+            
+            resultContainer.style.display = "block";
+            
+            if (detectedWords.length > 0) {
+                stressResult.innerHTML = `<strong>Stress Detected:</strong> Yes<br><strong>Stress Words:</strong> ${detectedWords.join(", ")}`;
+            } else {
+                stressResult.innerHTML = `<strong>Stress Detected:</strong> No<br><strong>Message:</strong> Stress is not detected.`;
+            }
+        }
+    </script>
+</body>
+</html>

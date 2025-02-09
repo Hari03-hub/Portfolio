@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File Manager</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h1>File Manager</h1>
+  <form id="uploadForm">
+    <label for="fileName">File Name:</label>
+    <input type="text" id="fileName" name="fileName" required><br><br>
+  
+    <label for="fileDescription">File Description:</label>
+    <textarea id="fileDescription" name="fileDescription" rows="4" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;"></textarea><br><br>
+  
+    <label for="file">Upload File:</label>
+    <input type="file" id="file" name="file" required><br><br>
+  
+    <button type="submit">Upload</button>
+  </form>
+  
+
+  <h2>Uploaded Files</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>File Name</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="fileTable">
+    </tbody>
+  </table>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('File uploaded successfully!');
+        fetchFiles();
+        e.target.reset(); // Reset the form after successful upload
+      } else {
+        alert('Failed to upload file.');
+      }
+    });
+
+    async function fetchFiles() {
+      try {
+        const response = await fetch('/files');
+        const files = await response.json();
+
+        const tableBody = document.getElementById('fileTable');
+        tableBody.innerHTML = '';
+
+        files.forEach((file, index) => {
+          const row = document.createElement('tr');
+
+          const nameCell = document.createElement('td');
+          nameCell.textContent = file.FileName;
+          row.appendChild(nameCell);
+
+          const descCell = document.createElement('td');
+          descCell.textContent = file.FileDescription;
+          row.appendChild(descCell);
+
+          const actionCell = document.createElement('td');
+          const viewButton = document.createElement('button');
+          viewButton.textContent = 'View';
+          viewButton.onclick = () => {
+            window.open(file.FilePath, '_blank');
+          };
+          actionCell.appendChild(viewButton);
+          row.appendChild(actionCell);
+
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      }
+    }
+
+    // Fetch files on page load
+    fetchFiles();
+  </script>
+</body>
+</html>
